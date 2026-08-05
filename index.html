@@ -1510,7 +1510,7 @@
     <div class="section-title"><span class="num">9</span>MoM Register &amp; Connect MTD — by Region, Shop Type &amp; Shop Name</div>
     <div class="section-hint">MoM MTD = (ส.ค. MTD − ก.ค. MTD ช่วงวันเดียวกัน) ÷ ก.ค. MTD ช่วงวันเดียวกัน. Click a column header to sort.</div>
 
-    <h4 class="chart-subtitle" style="margin:0 0 8px;">By Region WW (15)</h4>
+    <h4 class="chart-subtitle" style="margin:0 0 8px;">By Region WW</h4>
     <div class="table-card" style="margin-bottom:20px;">
       <div class="table-toolbar">
         <div class="count-text" id="tolMomRegionCount">15 regions</div>
@@ -3601,14 +3601,6 @@ function getTolFilteredJul(){
   return RAW_DATA3_JUL.filter(r=> TOL_FILTER_KEYS.every(f=>tolMatches(r,f)));
 }
 
-// Canonical dimension-value lists (union of August + July), used by the MoM
-// breakdown tables so every Region / Shop Type / Shop Name always appears —
-// including one with 0 rows under the current filter — rather than silently
-// dropping rows that have no data this month.
-const TOL_ALL_REGIONS = Array.from(new Set([...RAW_DATA3.map(r=>r.region), ...RAW_DATA3_JUL.map(r=>r.region)])).sort((a,b)=>a.localeCompare(b));
-const TOL_ALL_SHOPTYPES = Array.from(new Set([...RAW_DATA3.map(r=>r.shopType), ...RAW_DATA3_JUL.map(r=>r.shopType)])).sort((a,b)=>a.localeCompare(b));
-const TOL_ALL_SHOPNAMES = Array.from(new Set([...RAW_DATA3.map(r=>r.shop), ...RAW_DATA3_JUL.map(r=>r.shop)])).sort((a,b)=>a.localeCompare(b));
-
 function pruneTolInvalidSelections(){
   TOL_FILTER_KEYS.forEach(f=>{
     if (f.type==='single'){
@@ -4436,10 +4428,16 @@ document.getElementById('tolTodoExportCsvBtn').addEventListener('click', exportT
 // Name / Sale Represent filters if the user has set those.
 function momPctVal(cur, prior){ return (prior>0) ? ((cur-prior)/prior*100) : null; }
 
-function buildTolMomBreakdown(dimField, excludeKey, allValues){
+function buildTolMomBreakdown(dimField, excludeKey){
   const curDay = parseInt(String(TOL_AS_OF).slice(8,10), 10);
+  // Respect every ACTIVE filter except the table's own dimension (so e.g.
+  // selecting a Shop Name doesn't collapse the Shop Name table to one row),
+  // but DO respect other filters like Region / Shop Type / Sale Represent —
+  // so picking "BMA V" up top narrows the Shop Name table to only shops
+  // that actually have rows in BMA V, rather than always listing all shops.
   const augBase = getTolFilteredExcludingGeneric(RAW_DATA3, excludeKey);
   const julBase = getTolFilteredExcludingGeneric(RAW_DATA3_JUL, excludeKey);
+  const allValues = Array.from(new Set([...augBase.map(r=>r[dimField]), ...julBase.map(r=>r[dimField])])).sort((a,b)=>a.localeCompare(b));
   return allValues.map(v=>{
     const augRows = augBase.filter(r=>r[dimField]===v);
     const julRows = julBase.filter(r=>r[dimField]===v);
@@ -4504,7 +4502,7 @@ let lastTolMomRegionRows = [];
 let lastTolMomShopTypeRows = [];
 
 function renderTolMomRegion(){
-  const rows = buildTolMomBreakdown('region', 'region', TOL_ALL_REGIONS);
+  const rows = buildTolMomBreakdown('region', 'region');
   const st = tolMomState.region;
   const sorted = sortTolMomRows(rows, st.sortKey, st.sortDir);
   lastTolMomRegionRows = sorted;
@@ -4514,7 +4512,7 @@ function renderTolMomRegion(){
 }
 
 function renderTolMomShopType(){
-  const rows = buildTolMomBreakdown('shopType', 'shopType', TOL_ALL_SHOPTYPES);
+  const rows = buildTolMomBreakdown('shopType', 'shopType');
   const st = tolMomState.shopType;
   const sorted = sortTolMomRows(rows, st.sortKey, st.sortDir);
   lastTolMomShopTypeRows = sorted;
@@ -4524,7 +4522,7 @@ function renderTolMomShopType(){
 }
 
 function renderTolMomShopName(){
-  let rows = buildTolMomBreakdown('shop', 'shopName', TOL_ALL_SHOPNAMES);
+  let rows = buildTolMomBreakdown('shop', 'shopName');
   const st = tolMomState.shopName;
   if (st.search){
     const q = st.search.toLowerCase();
