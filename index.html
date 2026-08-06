@@ -521,6 +521,54 @@
   }
   .rank-sub{ font-weight:500; color: var(--text-muted); }
 
+  /* Diverging bar list (e.g. %MOM QTY by Region) — bars grow left (decline) or
+     right (growth) from a centered zero baseline, colored by sign. */
+  .diverge-list{ margin-bottom: 8px; }
+  .diverge-row{
+    display:grid;
+    grid-template-columns: 100px 1fr 68px;
+    align-items:center;
+    gap:8px;
+    margin-bottom: 11px;
+    cursor:pointer;
+    border-radius: 6px;
+    padding: 2px 4px;
+    margin-left: -4px;
+  }
+  .diverge-row:hover{ background: var(--brand-blue-050); }
+  .diverge-row.active-filter{ background: var(--brand-blue-100); }
+  .diverge-row.active-filter .diverge-label{ font-weight:800; color: var(--brand-blue-700); }
+  .diverge-label{
+    font-size: 11.5px;
+    color: var(--text-primary);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .diverge-track{
+    position:relative;
+    height: 12px;
+    background: #eef0f3;
+    border-radius: 4px;
+  }
+  .diverge-center{
+    position:absolute;
+    left:50%; top:-3px; bottom:-3px;
+    width:1px;
+    background:#c7cad1;
+  }
+  .diverge-fill{
+    position:absolute;
+    top:1px; bottom:1px;
+    border-radius:3px;
+  }
+  .diverge-value{
+    font-size: 11.5px;
+    font-weight:700;
+    text-align:right;
+    white-space:nowrap;
+  }
+
   .nosales-shops{
     margin-top: 22px;
     padding-top: 16px;
@@ -1172,7 +1220,12 @@
 <div class="main" id="page-sale" style="display:none;">
 
   <div class="section">
-    <div class="section-title"><span class="num">1</span>Channel Performance Table</div>
+    <div class="section-title"><span class="num">1</span>Executive Summary — Shop Performance by Bucket</div>
+    <div class="kpi-grid" id="saleKpiGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="num">2</span>Channel Performance Table</div>
     <div class="section-hint">Click a row to filter the whole tab to that channel — click it again to clear.</div>
     <div class="table-card">
       <div class="table-toolbar">
@@ -1209,7 +1262,7 @@
   </div>
 
   <div class="section">
-    <div class="section-title"><span class="num">2</span>Region Performance Table</div>
+    <div class="section-title"><span class="num">3</span>Region Performance Table</div>
     <div class="section-hint">Click a row to filter the whole tab to that regional — click it again to clear.</div>
     <div class="table-card">
       <div class="table-toolbar">
@@ -1246,7 +1299,7 @@
   </div>
 
   <div class="section">
-    <div class="section-title"><span class="num">3</span>Area Performance Table</div>
+    <div class="section-title"><span class="num">4</span>Area Performance Table</div>
     <div class="section-hint">Click a row to filter the whole tab to that area — click it again to clear.</div>
     <div class="table-card">
       <div class="table-toolbar">
@@ -1283,8 +1336,22 @@
   </div>
 
   <div class="section">
-    <div class="section-title"><span class="num">4</span>Achievement Distribution</div>
-    <div class="section-hint">Click a bar to filter the Detailed Shop Performance Table (Part 5) down to that group — click it again to clear.</div>
+    <div class="section-title"><span class="num">5</span>Channel Mix &amp; MoM QTY Trend</div>
+    <div class="two-col-charts">
+      <div class="chart-card">
+        <h4 class="chart-subtitle">Channel Mix — Share of QTY</h4>
+        <div class="rank-list tol-rank-list" id="saleChannelMixList"></div>
+      </div>
+      <div class="chart-card">
+        <h4 class="chart-subtitle">%MOM QTY by Region</h4>
+        <div class="diverge-list" id="saleRegionMomDiverge"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="num">6</span>Achievement Distribution</div>
+    <div class="section-hint">Click a bar to filter the Detailed Shop Performance Table (Part 7) down to that group — click it again to clear.</div>
     <div class="chart-card">
       <div class="chart-svg-wrap">
         <svg id="saleBarChart" width="100%" height="320"></svg>
@@ -1294,7 +1361,7 @@
   </div>
 
   <div class="section">
-    <div class="section-title"><span class="num">5</span>Detailed Shop Performance Table</div>
+    <div class="section-title"><span class="num">7</span>Detailed Shop Performance Table</div>
     <div class="table-card">
       <div class="table-toolbar">
         <div class="count-text" id="saleTableCount">Showing 0 of 0 shops</div>
@@ -1337,7 +1404,7 @@
   </div>
 
   <div class="section">
-    <div class="section-title"><span class="num">6</span>ข้อมูลเชิงลึกสำหรับผู้บริหาร (สร้างอัตโนมัติ)</div>
+    <div class="section-title"><span class="num">8</span>ข้อมูลเชิงลึกสำหรับผู้บริหาร (สร้างอัตโนมัติ)</div>
     <div class="insights-card" id="saleInsightsCard">
       <div class="insights-grid" id="saleInsightsGrid"></div>
     </div>
@@ -3054,6 +3121,76 @@ function renderSaleKPIs(filtered){
   }).join('');
 }
 
+// ---------- Channel Mix (Share of QTY) — horizontal categorical bar list ----------
+// Fixed hue per channel (identity, not rank), reusing colors already established
+// elsewhere in this dashboard so channel colors read consistently across tabs.
+const SALE_CHANNEL_COLORS = {
+  'True Shop Matching':     '#2a78d6',
+  'True Shop Non Matching': '#7c3aed',
+  'DTAC HALL':              '#fab219',
+  'DTAC COCO':              '#1baf7a',
+};
+function saleChannelColor(name){ return SALE_CHANNEL_COLORS[name] || '#8a93a3'; }
+
+function renderSaleChannelMix(filtered){
+  const el = document.getElementById('saleChannelMixList');
+  const groups = computeSaleGroupStats(filtered, 'channel');
+  const total = groups.reduce((s,g)=>s+g.sumQty,0);
+  if (groups.length===0 || total===0){
+    el.innerHTML = '<div class="empty-state" style="padding:10px 0;">No data match the current filters.</div>';
+    return;
+  }
+  const sorted = groups.slice().sort((a,b)=> b.sumQty-a.sumQty);
+  el.innerHTML = sorted.map(g=>{
+    const pct = total>0 ? (g.sumQty/total*100) : 0;
+    const color = saleChannelColor(g.key);
+    const isActive = saleFilterState.channel.size===1 && saleFilterState.channel.has(g.key);
+    return `
+      <div class="rank-row${isActive?' active-filter':''}" data-value="${g.key}">
+        <span class="rank-label" title="${g.key}">${g.key}</span>
+        <div class="rank-bar-track" style="background:${color}22;"><div class="rank-bar-fill" style="width:${pct}%; background:${color};"></div></div>
+        <span class="rank-value" style="color:${color};">${g.sumQty.toLocaleString()} <span class="rank-sub">(${pct.toFixed(0)}%)</span></span>
+      </div>`;
+  }).join('');
+  el.querySelectorAll('.rank-row').forEach(row=>{
+    row.addEventListener('click', ()=> applySaleDrillFilter('channel', row.dataset.value));
+  });
+}
+
+// ---------- %MOM QTY by Region — diverging bar list ----------
+// Above/below-baseline job → diverging color (green = growth, red = decline),
+// bars grow outward from a centered zero line rather than from a shared left edge.
+function renderSaleRegionMomDiverge(filtered){
+  const el = document.getElementById('saleRegionMomDiverge');
+  const groups = computeSaleGroupStats(filtered, 'regional');
+  const withMom = groups.filter(g=>g.momQtyPct!==null);
+  if (withMom.length===0){
+    el.innerHTML = '<div class="empty-state" style="padding:10px 0;">No MoM QTY data available for the current filters.</div>';
+    return;
+  }
+  const maxAbs = Math.max(1, ...withMom.map(g=>Math.abs(g.momQtyPct)));
+  const sorted = withMom.slice().sort((a,b)=> b.momQtyPct-a.momQtyPct);
+  el.innerHTML = sorted.map(g=>{
+    const pct = Math.min(50, Math.abs(g.momQtyPct)/maxAbs*50);
+    const up = g.momQtyPct>=0;
+    const color = up ? '#0ca30c' : '#d03b3b';
+    const side = up ? `left:50%; width:${pct}%;` : `left:${50-pct}%; width:${pct}%;`;
+    const isActive = saleFilterState.regional.size===1 && saleFilterState.regional.has(g.key);
+    return `
+      <div class="diverge-row${isActive?' active-filter':''}" data-value="${g.key}">
+        <span class="diverge-label" title="${g.key}">${g.key}</span>
+        <div class="diverge-track">
+          <div class="diverge-center"></div>
+          <div class="diverge-fill" style="${side} background:${color};"></div>
+        </div>
+        <span class="diverge-value" style="color:${color};">${up?'+':''}${g.momQtyPct.toFixed(1)}%</span>
+      </div>`;
+  }).join('');
+  el.querySelectorAll('.diverge-row').forEach(row=>{
+    row.addEventListener('click', ()=> applySaleDrillFilter('regional', row.dataset.value));
+  });
+}
+
 // ---------- Distribution bar chart ----------
 function renderSaleChart(filtered){
   const svg = document.getElementById('saleBarChart');
@@ -3533,9 +3670,12 @@ function exportSaleGroupCsv(groupKey){
 // ---------- Orchestration ----------
 function renderSaleAll(){
   const filtered = getSaleFiltered();
+  renderSaleKPIs(filtered);
   renderSaleGroupTable('channel');
   renderSaleGroupTable('regional');
   renderSaleGroupTable('area');
+  renderSaleChannelMix(filtered);
+  renderSaleRegionMomDiverge(filtered);
   renderSaleChart(filtered);
   renderSaleTable(filtered);
   generateSaleInsights(filtered);
