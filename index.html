@@ -947,6 +947,65 @@
     color: var(--text-muted);
     padding: 10px 0 24px;
   }
+
+  /* ===== Suggestion tab (cross-source synthesis by Area) ===== */
+  .priority-callout{
+    background: var(--surface-1);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    padding: 14px 18px;
+    border-left: 5px solid var(--status-critical);
+    margin-bottom: 10px;
+  }
+  .priority-callout.tier-strong{ border-left-color: var(--status-good); }
+  .priority-callout.tier-moderate{ border-left-color: var(--status-warning); }
+  .priority-callout.tier-urgent{ border-left-color: var(--status-critical); }
+  .priority-callout-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .priority-callout-title{ font-size:13.5px; font-weight:800; color: var(--text-primary); }
+  .priority-callout-region{ font-size:11px; color: var(--text-muted); font-weight:600; margin-left:8px; }
+  .priority-callout-body{ font-size:12.5px; color: var(--text-secondary); line-height:1.55; margin:0; padding-left:18px; }
+  .priority-callout-body li{ margin-bottom:4px; }
+  .priority-callout-body b{ color: var(--brand-blue-700); }
+
+  .score-badge{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:12px; font-weight:800; padding:3px 10px;
+    border-radius:999px; white-space:nowrap;
+  }
+  .score-badge.tier-strong{ background: rgba(12,163,12,0.14); color: var(--status-good-text); }
+  .score-badge.tier-moderate{ background: rgba(250,178,25,0.18); color: var(--status-warning-text); }
+  .score-badge.tier-urgent{ background: rgba(208,59,59,0.14); color: var(--status-critical-text); }
+
+  #suggestionRankBody tr{ cursor:pointer; }
+
+  .area-card{ margin-bottom:12px; }
+  .area-card summary{
+    list-style:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding: 2px 2px;
+  }
+  .area-card summary::-webkit-details-marker{ display:none; }
+  .area-card-title-wrap{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .area-card-title{ font-size:14px; font-weight:800; color: var(--text-primary); }
+  .area-card-region{ font-size:11.5px; color: var(--text-muted); font-weight:600; }
+  .area-card-chev{ font-size:12px; color: var(--brand-blue-500); transition: transform 0.15s ease; flex-shrink:0; }
+  .area-card[open] .area-card-chev{ transform: rotate(90deg); }
+  .area-card-summary-metrics{ display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color: var(--text-secondary); margin-top:4px; }
+  .area-card-summary-metrics b{ color: var(--text-primary); }
+  .area-card-body{ padding-top:14px; border-top: 1px solid var(--gridline); margin-top:12px; }
+  .area-metric-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+  @media (max-width: 1100px){ .area-metric-grid{ grid-template-columns: repeat(2,1fr);} }
+  .area-metric-group{ background: var(--brand-blue-050); border-radius:10px; padding:10px 12px; }
+  .area-metric-group h5{ margin:0 0 8px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color: var(--brand-blue-700); }
+  .area-metric-row{ display:flex; justify-content:space-between; gap:8px; font-size:12px; color: var(--text-primary); padding:2px 0; }
+  .area-metric-row span:first-child{ color: var(--text-secondary); }
+  .area-metric-row span:last-child{ font-weight:700; font-variant-numeric: tabular-nums; white-space:nowrap; }
+  .area-reco-block{ margin-bottom:12px; }
+  .area-reco-block h5{ margin:0 0 6px; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color: var(--text-muted); }
+  .area-reco-list{ margin:0; padding-left:18px; }
+  .area-reco-list li{ font-size:12.5px; line-height:1.6; color: var(--text-primary); margin-bottom:6px; }
+  .area-reco-list li b{ color: var(--brand-blue-700); }
 </style>
 </head>
 <body>
@@ -991,6 +1050,7 @@
   <button class="tab-btn" data-tab="tol" type="button">Register &amp; Connect</button>
   <button class="tab-btn active" data-tab="main" type="button">Staff Performance</button>
   <button class="tab-btn" data-tab="productivity" type="button">AVG Productivity</button>
+  <button class="tab-btn" data-tab="suggestion" type="button">Suggestion</button>
 </div>
 
 <div class="main" id="page-main">
@@ -1657,6 +1717,62 @@
         <button id="tolMomShopNextPage">Next &rarr;</button>
       </div>
     </div>
+  </div>
+
+</div>
+
+<div class="main" id="page-suggestion" style="display:none;">
+
+  <div class="section">
+    <div class="section-title"><span class="num">1</span>Executive Summary — Network Health by Area</div>
+    <div class="section-hint">สังเคราะห์ข้อมูลจากทั้ง 4 มุมมอง (Sale Performance, Register &amp; Connect, Staff Performance, AVG Productivity) แยกตาม 15 Area เพื่อประเมินสุขภาพการดำเนินงานและให้ข้อเสนอแนะเชิงลึกในแต่ละพื้นที่</div>
+    <div class="kpi-grid" id="suggestionKpiGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="num">2</span>พื้นที่ที่ควรให้ความสำคัญเป็นลำดับแรก</div>
+    <div class="section-hint">พื้นที่ที่มี Health Score ต่ำที่สุด หรือมีตัวชี้วัดที่ต้องเฝ้าระวังเป็นพิเศษ</div>
+    <div id="suggestionPriorityCallouts"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="num">3</span>Area Score &amp; Ranking Table (ทั้ง 15 Area)</div>
+    <div class="section-hint">คลิกแถวเพื่อเลื่อนไปดูรายละเอียดและข้อเสนอแนะของพื้นที่นั้นในหัวข้อถัดไป</div>
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="count-text" id="suggestionTableCount">Showing 15 of 15 areas</div>
+        <div class="table-toolbar-right">
+          <button type="button" class="export-btn" id="suggestionExportCsvBtn" title="Export the current ranking table to a CSV file">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12v1.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Export CSV
+          </button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="suggestionRankTable">
+          <thead>
+            <tr>
+              <th data-key="area">AREA<span class="sort-arrow"></span></th>
+              <th data-key="region">REGION<span class="sort-arrow"></span></th>
+              <th data-key="healthScore" class="num">HEALTH SCORE<span class="sort-arrow"></span></th>
+              <th data-key="headcount" class="num">HEADCOUNT<span class="sort-arrow"></span></th>
+              <th data-key="staffAchPct" class="num">%ACH RR (STAFF)<span class="sort-arrow"></span></th>
+              <th data-key="saleAchQtyPct" class="num">%ACH QTY (SALE)<span class="sort-arrow"></span></th>
+              <th data-key="saleMomQtyPct" class="num">%MOM QTY<span class="sort-arrow"></span></th>
+              <th data-key="cancelRate" class="num">CANCEL RATE%<span class="sort-arrow"></span></th>
+              <th data-key="pendingRate" class="num">PENDING RATE%<span class="sort-arrow"></span></th>
+            </tr>
+          </thead>
+          <tbody id="suggestionRankBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="num">4</span>รายละเอียดและข้อเสนอแนะ แยกตามพื้นที่ (15 Area)</div>
+    <div class="section-hint">เรียงจาก Health Score ต่ำสุดไปสูงสุด — คลิกที่แถบหัวข้อพื้นที่เพื่อดู/ซ่อนรายละเอียด</div>
+    <div id="suggestionAreaCards"></div>
   </div>
 
 </div>
@@ -4777,6 +4893,434 @@ function renderTolAll(){
   renderTolMomAll();
 }
 
+
+// ==================================================================
+// Suggestion tab — cross-source synthesis & recommendations by Area
+// ==================================================================
+// RAW_DATA.area and RAW_DATA3.region share one canonical string format for
+// the same 15 areas (e.g. "BMA I - North West"). RAW_DATA2.area uses a
+// different string format for the exact same 15 areas (e.g.
+// "BMA I (North West)"), so each entry below also carries the matching
+// Sale-format label needed to join Sale Performance data on Area.
+const SUGGESTION_AREAS = [
+  { key:'BMA I - North West',       saleArea:'BMA I (North West)',   region:'BMA' },
+  { key:'BMA II - South West',      saleArea:'BMA II (South West)',  region:'BMA' },
+  { key:'BMA III - North East',     saleArea:'BMA III (North East)', region:'BMA' },
+  { key:'BMA IV - South East',      saleArea:'BMA IV (South East)',  region:'BMA' },
+  { key:'BMA V - Central',          saleArea:'BMA V (Central)',      region:'BMA' },
+  { key:'UPC - Central',            saleArea:'Central',              region:'UPC II' },
+  { key:'UPC - Central Northeast',  saleArea:'Central Northeast',    region:'UPC I' },
+  { key:'UPC - East',               saleArea:'East',                 region:'UPC II' },
+  { key:'UPC - Lower North',        saleArea:'Lower North',          region:'UPC I' },
+  { key:'UPC - Lower Northeast',    saleArea:'Lower Northeast',      region:'UPC I' },
+  { key:'UPC - Lower South',        saleArea:'Lower South',          region:'UPC II' },
+  { key:'UPC - Upper North',        saleArea:'Upper North',          region:'UPC I' },
+  { key:'UPC - Upper Northeast',    saleArea:'Upper Northeast',      region:'UPC I' },
+  { key:'UPC - Upper South',        saleArea:'Upper South',          region:'UPC II' },
+  { key:'UPC - West',               saleArea:'West',                 region:'UPC II' },
+];
+
+const SUGGESTION_TIER_META = {
+  strong:   { label:'แข็งแกร่ง',              cls:'tier-strong',   icon:'🟢' },
+  moderate: { label:'ปานกลาง — ควรติดตาม',    cls:'tier-moderate', icon:'🟡' },
+  urgent:   { label:'ต้องเร่งปรับปรุง',        cls:'tier-urgent',   icon:'🔴' },
+};
+
+function suggestionClamp(v){ return Math.max(0, Math.min(100, v)); }
+
+function suggestionAchColor(pct){
+  if (pct<=0) return BUCKET_MAP.no_sales.text;
+  if (pct<50) return BUCKET_MAP.needs_improvement.text;
+  if (pct<80) return BUCKET_MAP.getting_there.text;
+  if (pct<100) return BUCKET_MAP.almost_target.text;
+  return BUCKET_MAP.target_achieved.text;
+}
+
+function suggestionSlug(area){ return 'sugArea-' + area.replace(/[^a-zA-Z0-9]+/g,'-'); }
+
+// Pulls fresh totals straight from RAW_DATA / RAW_DATA2 / RAW_DATA3 (i.e. every
+// row in the dataset) rather than any per-tab filter state — the Suggestion tab
+// is a whole-network synthesis and intentionally ignores the other tabs' filters.
+function computeSuggestionAreaStats(){
+  const curDay = parseInt(String(TOL_AS_OF).slice(8,10), 10);
+
+  const rows = SUGGESTION_AREAS.map(a=>{
+    // ---- Staff Performance (RAW_DATA) ----
+    const staffRows = RAW_DATA.filter(r=>r.area===a.key);
+    const headcount = staffRows.length;
+    let sumTarget=0, sumActual=0, sumActualRR=0, noSalesCount=0;
+    staffRows.forEach(r=>{ sumTarget+=r.target; sumActual+=r.actual; sumActualRR+=r.actualRR; if (r.actual===0) noSalesCount++; });
+    const staffAchPct = sumTarget>0 ? (sumActualRR/sumTarget*100) : 0;
+    const noSalesPct = headcount>0 ? (noSalesCount/headcount*100) : 0;
+    const avgActual = headcount>0 ? sumActual/headcount : 0;
+    const avgActualRR = headcount>0 ? sumActualRR/headcount : 0;
+
+    // ---- Sale Performance (RAW_DATA2) — joined via the Sale-format area label ----
+    const saleRows = RAW_DATA2.filter(r=>r.area===a.saleArea);
+    let sumTgQty=0, sumQty=0, sumRrQty=0;
+    saleRows.forEach(r=>{ sumTgQty+=r.tgQty; sumQty+=r.qty; sumRrQty+=r.rrQty; });
+    const saleAchQtyPct = sumTgQty>0 ? (sumRrQty/sumTgQty*100) : 0;
+    const saleMomQtyPct = saleWeightedMomQtyPct(saleRows);
+    const shopCount = new Set(saleRows.map(r=>r.shopCode)).size;
+
+    // ---- Register & Connect (RAW_DATA3 / RAW_DATA3_JUL) ----
+    const tolRows = RAW_DATA3.filter(r=>r.region===a.key);
+    const regRows = tolRows.filter(r=>r.source==='TOL-REGISTER');
+    const conRows = tolRows.filter(r=>r.source==='TOL-CONNECT');
+    const registerCount = regRows.length;
+    const connectCount = conRows.length;
+    const pendingCount = regRows.filter(r=>r.status==='Pending').length;
+    const cancelCount = regRows.filter(r=>r.status==='Cancel').length;
+    const cancelRate = registerCount>0 ? (cancelCount/registerCount*100) : 0;
+    const pendingRate = registerCount>0 ? (pendingCount/registerCount*100) : 0;
+
+    const julRows = RAW_DATA3_JUL.filter(r=>r.region===a.key);
+    const regAug = regRows.filter(r=>r.registerDay && tolMonthOf(r.registerDay)===8 && tolDayOf(r.registerDay)<=curDay).length;
+    const regJul = julRows.filter(r=>r.source==='TOL-REGISTER' && r.registerDay && tolMonthOf(r.registerDay)===7 && tolDayOf(r.registerDay)<=curDay).length;
+    const conAug = conRows.filter(r=>r.appointDay && tolMonthOf(r.appointDay)===8 && tolDayOf(r.appointDay)<=curDay).length;
+    const conJul = julRows.filter(r=>r.source==='TOL-CONNECT' && r.appointDay && tolMonthOf(r.appointDay)===7 && tolDayOf(r.appointDay)<=curDay).length;
+    const momReg = momPctVal(regAug, regJul);
+    const momCon = momPctVal(conAug, conJul);
+
+    return {
+      area:a.key, region:a.region,
+      headcount, sumTarget, sumActual, sumActualRR, staffAchPct, noSalesPct, avgActual, avgActualRR,
+      shopCount, sumTgQty, sumQty, sumRrQty, saleAchQtyPct, saleMomQtyPct,
+      registerCount, connectCount, pendingCount, cancelCount, cancelRate, pendingRate, momReg, momCon,
+    };
+  });
+
+  // Network-wide averages — used as RELATIVE benchmarks in the recommendation
+  // rules below. Pending Rate in particular runs structurally high (35-65%)
+  // across every single area because it counts every not-yet-connected
+  // register including ones scheduled for later in the month, so an absolute
+  // threshold would flag the whole network rather than genuine outliers.
+  const n = rows.length;
+  const netAvgCancelRate = rows.reduce((s,r)=>s+r.cancelRate,0)/n;
+  const netAvgPendingRate = rows.reduce((s,r)=>s+r.pendingRate,0)/n;
+  const netAvgNoSalesPct = rows.reduce((s,r)=>s+r.noSalesPct,0)/n;
+  const bench = { netAvgCancelRate, netAvgPendingRate, netAvgNoSalesPct };
+
+  rows.forEach(r=>{
+    const staffScore = suggestionClamp(r.staffAchPct);
+    const saleScore = suggestionClamp(r.saleAchQtyPct);
+    const cancelScore = suggestionClamp(100 - r.cancelRate*5);
+    const moms = [r.saleMomQtyPct, r.momReg, r.momCon].filter(v=>v!==null && v!==undefined);
+    const avgMom = moms.length ? (moms.reduce((s,v)=>s+v,0)/moms.length) : 0;
+    const momentumScore = suggestionClamp(50 + avgMom);
+    const healthScore = 0.30*staffScore + 0.30*saleScore + 0.20*cancelScore + 0.20*momentumScore;
+    let tier;
+    if (healthScore < 70) tier = 'urgent';
+    else if (healthScore < 83) tier = 'moderate';
+    else tier = 'strong';
+    r.staffScore = staffScore; r.saleScore = saleScore; r.cancelScore = cancelScore;
+    r.momentumScore = momentumScore; r.avgMom = avgMom; r.healthScore = healthScore; r.tier = tier;
+    r.recommendations = buildAreaRecommendations(r, bench);
+  });
+
+  return { rows, bench };
+}
+
+function buildAreaRecommendations(r, bench){
+  const staffBullets = [];
+  const saleBullets = [];
+  const tolBullets = [];
+
+  // --- Staff Performance ---
+  if (r.sumTarget<=0){
+    staffBullets.push(`พื้นที่นี้ไม่มีข้อมูลเป้าหมาย (Target) ของพนักงานในระบบ ควรตรวจสอบการตั้งเป้าหมายรายบุคคล`);
+  } else if (r.staffAchPct < 70){
+    staffBullets.push(`ผลงานพนักงานเทียบเป้าหมาย (%ACH RR) อยู่ที่เพียง <b>${r.staffAchPct.toFixed(1)}%</b> ต่ำกว่าเกณฑ์อย่างมีนัยสำคัญ ควรจัด Coaching รายบุคคลและทบทวนความเหมาะสมของเป้าหมายกับศักยภาพพื้นที่โดยเร่งด่วน`);
+  } else if (r.staffAchPct < 100){
+    staffBullets.push(`ผลงานพนักงานเทียบเป้าหมาย (%ACH RR) อยู่ที่ <b>${r.staffAchPct.toFixed(1)}%</b> ยังไม่ถึงเป้า ควรผลักดันด้วยแคมเปญกระตุ้นยอดระยะสั้นและติดตามผลรายสัปดาห์`);
+  } else {
+    staffBullets.push(`ผลงานพนักงานเทียบเป้าหมาย (%ACH RR) ทำได้ <b>${r.staffAchPct.toFixed(1)}%</b> ถึงเป้าหมายแล้ว ควรรักษามาตรฐานและถ่ายทอดแนวทางความสำเร็จ (Best Practice) ให้พื้นที่อื่น`);
+  }
+  if (r.headcount>0 && r.noSalesPct > bench.netAvgNoSalesPct + 8){
+    staffBullets.push(`สัดส่วนพนักงานที่ไม่มียอดขายเลย (No Sales) สูงถึง <b>${r.noSalesPct.toFixed(1)}%</b> ของพนักงานในพื้นที่ (ค่าเฉลี่ยเครือข่าย ${bench.netAvgNoSalesPct.toFixed(1)}%) ควรตรวจสอบสาเหตุเป็นรายบุคคล เช่น สต็อกสินค้า ทำเลหน้าร้าน หรือการมอบหมายงาน`);
+  }
+  if (staffBullets.length===1 && !(r.headcount>0 && r.noSalesPct > bench.netAvgNoSalesPct + 8)){
+    staffBullets.push(`มีพนักงานทั้งหมด <b>${r.headcount.toLocaleString()}</b> คนในพื้นที่ ผลงานเฉลี่ย ACTUAL-RR ต่อคนอยู่ที่ <b>${r.avgActualRR.toFixed(1)}</b>`);
+  }
+
+  // --- Sale Performance ---
+  if (r.sumTgQty<=0){
+    saleBullets.push(`พื้นที่นี้ไม่มีข้อมูลเป้าหมายยอดขาย (TG QTY) ในระบบ Sale Performance ควรตรวจสอบการตั้งเป้าหมายระดับร้านค้า`);
+  } else if (r.saleAchQtyPct < 90){
+    saleBullets.push(`ยอดขาย QTY เทียบเป้าหมาย (%ACH QTY) อยู่ที่ <b>${r.saleAchQtyPct.toFixed(1)}%</b> ต่ำกว่าเป้า ควรทบทวนแผนส่งเสริมการขายและกลยุทธ์ราคา/โปรโมชันในพื้นที่`);
+  } else if (r.saleAchQtyPct < 100){
+    saleBullets.push(`ยอดขาย QTY เทียบเป้าหมาย (%ACH QTY) อยู่ที่ <b>${r.saleAchQtyPct.toFixed(1)}%</b> ใกล้ถึงเป้าหมายแล้ว ควรกระตุ้นเพิ่มเติมในช่วงโค้งสุดท้ายของเดือน`);
+  } else {
+    saleBullets.push(`ยอดขาย QTY เทียบเป้าหมาย (%ACH QTY) ทำได้ <b>${r.saleAchQtyPct.toFixed(1)}%</b> ถึงเป้าหมายแล้ว`);
+  }
+  if (r.saleMomQtyPct===null || r.saleMomQtyPct===undefined){
+    saleBullets.push(`ไม่สามารถคำนวณ %MOM QTY ได้ (ไม่มีข้อมูลเดือนก่อนหน้าที่เปรียบเทียบได้ในพื้นที่นี้)`);
+  } else if (r.saleMomQtyPct < 0){
+    saleBullets.push(`ยอดขาย QTY เดือนนี้ลดลง <b>${Math.abs(r.saleMomQtyPct).toFixed(1)}%</b> จากเดือนก่อน (%MOM QTY ติดลบ) ควรวิเคราะห์สาเหตุการชะลอตัวของยอดขายโดยด่วน`);
+  } else if (r.saleMomQtyPct >= 30){
+    saleBullets.push(`ยอดขาย QTY เติบโตขึ้นถึง <b>+${r.saleMomQtyPct.toFixed(1)}%</b> จากเดือนก่อน (%MOM QTY) เป็นแนวโน้มที่ดีมาก ควรศึกษาปัจจัยความสำเร็จเพื่อขยายผลไปยังพื้นที่อื่น`);
+  } else {
+    saleBullets.push(`ยอดขาย QTY เปลี่ยนแปลง <b>${r.saleMomQtyPct>=0?'+':''}${r.saleMomQtyPct.toFixed(1)}%</b> จากเดือนก่อน (%MOM QTY) อยู่ในเกณฑ์ปกติ`);
+  }
+
+  // --- Register & Connect ---
+  if (r.registerCount===0){
+    tolBullets.push(`ไม่พบข้อมูล Register/Connect ของพื้นที่นี้ในรอบข้อมูลปัจจุบัน`);
+  } else {
+    if (r.cancelRate > bench.netAvgCancelRate * 1.3){
+      tolBullets.push(`อัตรายกเลิก (Cancel Rate) อยู่ที่ <b>${r.cancelRate.toFixed(1)}%</b> สูงกว่าค่าเฉลี่ยเครือข่าย (${bench.netAvgCancelRate.toFixed(1)}%) ควรตรวจสอบคุณภาพการขาย การให้ข้อมูลลูกค้า และสาเหตุการยกเลิกจากลูกค้าโดยละเอียด`);
+    }
+    if (r.pendingRate > bench.netAvgPendingRate + 10){
+      tolBullets.push(`มีงานค้างดำเนินการ (Pending) สูงถึง <b>${r.pendingRate.toFixed(1)}%</b> ของยอด Register ทั้งหมด (ค่าเฉลี่ยเครือข่าย ${bench.netAvgPendingRate.toFixed(1)}%) ควรเร่งจัดสรรทีมช่างติดตั้งให้ปิดงานตามนัดหมายให้เร็วขึ้น`);
+    }
+    if (r.momReg!==null && r.momReg<-10){
+      tolBullets.push(`จำนวน Register เดือนนี้ลดลง <b>${Math.abs(r.momReg).toFixed(1)}%</b> จากเดือนก่อน ควรเร่งกิจกรรมหาลูกค้าใหม่และประชาสัมพันธ์โปรโมชันในพื้นที่`);
+    }
+    if (r.momCon!==null && r.momCon<-10){
+      tolBullets.push(`จำนวน Connect เดือนนี้ลดลง <b>${Math.abs(r.momCon).toFixed(1)}%</b> จากเดือนก่อน ควรเร่งติดตามคิวติดตั้งที่ค้างอยู่และประสานทีมช่างเพิ่มเติม`);
+    }
+    if (tolBullets.length===0){
+      const regTxt = r.momReg!==null ? `${r.momReg>=0?'+':''}${r.momReg.toFixed(1)}%` : 'N/A';
+      const conTxt = r.momCon!==null ? `${r.momCon>=0?'+':''}${r.momCon.toFixed(1)}%` : 'N/A';
+      tolBullets.push(`Register (${regTxt}) และ Connect (${conTxt}) เทียบเดือนก่อน รวมถึงอัตรายกเลิก/ค้างดำเนินการ อยู่ในเกณฑ์ปกติเมื่อเทียบกับค่าเฉลี่ยเครือข่าย ควรรักษาจังหวะการทำงานนี้ต่อไป`);
+    }
+  }
+
+  return { staffBullets, saleBullets, tolBullets };
+}
+
+function renderSuggestionKPIs(data){
+  const grid = document.getElementById('suggestionKpiGrid');
+  const counts = { strong:0, moderate:0, urgent:0 };
+  data.rows.forEach(r=>counts[r.tier]++);
+  const cards = [
+    { label:'Total Areas Monitored', value: data.rows.length.toLocaleString(), color:'#2a78d6', sub:'ครอบคลุมทั้ง 15 Area ใน 3 ภูมิภาค (BMA, UPC I, UPC II)' },
+    { label:'Strong (Score ≥ 83)', value: counts.strong.toLocaleString(), color:'#0ca30c', sub:`${(counts.strong/data.rows.length*100).toFixed(0)}% ของพื้นที่ทั้งหมด` },
+    { label:'Moderate (Score 70-82)', value: counts.moderate.toLocaleString(), color:'#fab219', sub:`${(counts.moderate/data.rows.length*100).toFixed(0)}% ของพื้นที่ทั้งหมด` },
+    { label:'Needs Urgent Attention (Score < 70)', value: counts.urgent.toLocaleString(), color:'#d03b3b', sub:`${(counts.urgent/data.rows.length*100).toFixed(0)}% ของพื้นที่ทั้งหมด` },
+  ];
+  grid.innerHTML = cards.map(c=>`
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:${c.color}"></div>
+      <div class="kpi-top">
+        <span class="kpi-dot" style="background:${c.color}"></span>
+        <span class="kpi-label">${c.label}</span>
+      </div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-sub">${c.sub}</div>
+    </div>
+  `).join('');
+}
+
+function renderSuggestionPriorityCallouts(data){
+  const el = document.getElementById('suggestionPriorityCallouts');
+  const sorted = data.rows.slice().sort((a,b)=>a.healthScore-b.healthScore);
+  let picks = sorted.filter(r=>r.tier==='urgent');
+  if (picks.length===0) picks = sorted.filter(r=>r.tier==='moderate').slice(0,2);
+  if (picks.length===0){
+    el.innerHTML = `<div class="priority-callout tier-strong"><div class="priority-callout-head"><span class="priority-callout-title">ทุกพื้นที่อยู่ในเกณฑ์แข็งแกร่ง (Score ≥ 83)</span></div><div class="priority-callout-body">ไม่มีพื้นที่ที่ต้องเฝ้าระวังเป็นพิเศษในขณะนี้ — ควรรักษามาตรฐานการดำเนินงานและติดตามผลอย่างต่อเนื่องทุกเดือน</div></div>`;
+    return;
+  }
+  el.innerHTML = picks.map(r=>{
+    const meta = SUGGESTION_TIER_META[r.tier];
+    const allBullets = [...r.recommendations.staffBullets, ...r.recommendations.saleBullets, ...r.recommendations.tolBullets];
+    // Surface only the most actionable 2-3 bullets in the top-level callout —
+    // the full breakdown is always available in the per-area card below.
+    const top = allBullets.slice(0,3);
+    return `
+      <div class="priority-callout ${meta.cls}" data-area="${r.area}">
+        <div class="priority-callout-head">
+          <span><span class="priority-callout-title">${meta.icon} ${r.area}</span><span class="priority-callout-region">${r.region}</span></span>
+          <span class="score-badge ${meta.cls}">Health Score ${r.healthScore.toFixed(0)} · ${meta.label}</span>
+        </div>
+        <ul class="priority-callout-body">${top.map(b=>`<li>${b}</li>`).join('')}</ul>
+      </div>`;
+  }).join('');
+  el.querySelectorAll('.priority-callout[data-area]').forEach(card=>{
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', ()=> suggestionOpenAreaDetail(card.dataset.area));
+  });
+}
+
+function suggestionOpenAreaDetail(area){
+  const target = document.getElementById(suggestionSlug(area));
+  if (!target) return;
+  target.open = true;
+  target.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+const suggestionRankState = { sortKey:'healthScore', sortDir:'asc' };
+
+function renderSuggestionRankTable(data){
+  const st = suggestionRankState;
+  const rows = data.rows.slice().sort((a,b)=>{
+    let av=a[st.sortKey], bv=b[st.sortKey];
+    if (av===null || av===undefined) av = -Infinity;
+    if (bv===null || bv===undefined) bv = -Infinity;
+    if (typeof av==='string'){ av=av.toLowerCase(); bv=bv.toLowerCase(); }
+    if (av<bv) return st.sortDir==='asc'?-1:1;
+    if (av>bv) return st.sortDir==='asc'?1:-1;
+    return 0;
+  });
+  document.getElementById('suggestionTableCount').textContent = `Showing ${rows.length} of ${data.rows.length} areas`;
+  document.getElementById('suggestionRankBody').innerHTML = rows.map(r=>{
+    const meta = SUGGESTION_TIER_META[r.tier];
+    const cancelColor = r.cancelRate > data.bench.netAvgCancelRate*1.3 ? 'var(--status-critical-text)' : 'var(--text-primary)';
+    const pendingColor = r.pendingRate > data.bench.netAvgPendingRate+10 ? 'var(--status-critical-text)' : 'var(--text-primary)';
+    return `
+    <tr data-area="${r.area}">
+      <td>${r.area}</td>
+      <td>${r.region}</td>
+      <td class="num"><span class="score-badge ${meta.cls}">${r.healthScore.toFixed(0)}</span></td>
+      <td class="num">${r.headcount.toLocaleString()}</td>
+      <td class="num ach-cell" style="color:${suggestionAchColor(r.staffAchPct)}">${r.staffAchPct.toFixed(1)}%</td>
+      <td class="num ach-cell" style="color:${suggestionAchColor(r.saleAchQtyPct)}">${r.saleAchQtyPct.toFixed(1)}%</td>
+      <td class="num">${r.saleMomQtyPct===null||r.saleMomQtyPct===undefined ? '<span style="color:var(--text-muted)">N/A</span>' : tolMomCellHtml(r.saleMomQtyPct)}</td>
+      <td class="num" style="color:${cancelColor}; font-weight:${cancelColor==='var(--text-primary)'?'400':'700'};">${r.cancelRate.toFixed(1)}%</td>
+      <td class="num" style="color:${pendingColor}; font-weight:${pendingColor==='var(--text-primary)'?'400':'700'};">${r.pendingRate.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+  document.querySelectorAll('#suggestionRankTable thead th').forEach(th=>{
+    const arrow = th.querySelector('.sort-arrow');
+    if (!arrow) return;
+    arrow.textContent = th.dataset.key===st.sortKey ? (st.sortDir==='asc'?'▲':'▼') : '';
+  });
+  document.querySelectorAll('#suggestionRankBody tr[data-area]').forEach(tr=>{
+    tr.addEventListener('click', ()=> suggestionOpenAreaDetail(tr.dataset.area));
+  });
+}
+
+function renderSuggestionAreaCards(data){
+  const el = document.getElementById('suggestionAreaCards');
+  const sorted = data.rows.slice().sort((a,b)=>a.healthScore-b.healthScore);
+  el.innerHTML = sorted.map(r=>{
+    const meta = SUGGESTION_TIER_META[r.tier];
+    const rec = r.recommendations;
+    return `
+    <details class="area-card chart-card" id="${suggestionSlug(r.area)}">
+      <summary>
+        <div class="area-card-title-wrap">
+          <span class="area-card-title">${r.area}</span>
+          <span class="area-card-region">${r.region}</span>
+          <span class="score-badge ${meta.cls}">${meta.icon} Health Score ${r.healthScore.toFixed(0)} · ${meta.label}</span>
+        </div>
+        <span class="area-card-chev">&#9656;</span>
+      </summary>
+      <div class="area-card-summary-metrics">
+        <span>Headcount: <b>${r.headcount.toLocaleString()}</b></span>
+        <span>%ACH RR: <b>${r.staffAchPct.toFixed(1)}%</b></span>
+        <span>%ACH QTY: <b>${r.saleAchQtyPct.toFixed(1)}%</b></span>
+        <span>Register: <b>${r.registerCount.toLocaleString()}</b></span>
+        <span>Connect: <b>${r.connectCount.toLocaleString()}</b></span>
+        <span>Cancel Rate: <b>${r.cancelRate.toFixed(1)}%</b></span>
+      </div>
+      <div class="area-card-body">
+        <div class="area-metric-grid">
+          <div class="area-metric-group">
+            <h5>Staff Performance</h5>
+            <div class="area-metric-row"><span>Headcount</span><span>${r.headcount.toLocaleString()}</span></div>
+            <div class="area-metric-row"><span>Sum Target</span><span>${r.sumTarget.toLocaleString()}</span></div>
+            <div class="area-metric-row"><span>Sum Actual-RR</span><span>${r.sumActualRR.toLocaleString(undefined,{maximumFractionDigits:0})}</span></div>
+            <div class="area-metric-row"><span>%ACH RR</span><span style="color:${suggestionAchColor(r.staffAchPct)}">${r.staffAchPct.toFixed(1)}%</span></div>
+            <div class="area-metric-row"><span>No Sales %</span><span>${r.noSalesPct.toFixed(1)}%</span></div>
+          </div>
+          <div class="area-metric-group">
+            <h5>AVG Productivity</h5>
+            <div class="area-metric-row"><span>Avg Actual / staff</span><span>${r.avgActual.toFixed(2)}</span></div>
+            <div class="area-metric-row"><span>Avg Actual-RR / staff</span><span>${r.avgActualRR.toFixed(2)}</span></div>
+            <div class="area-metric-row"><span>Shops (Sale data)</span><span>${r.shopCount.toLocaleString()}</span></div>
+          </div>
+          <div class="area-metric-group">
+            <h5>Sale Performance</h5>
+            <div class="area-metric-row"><span>TG QTY</span><span>${r.sumTgQty.toFixed(1)}</span></div>
+            <div class="area-metric-row"><span>QTY</span><span>${r.sumQty.toLocaleString()}</span></div>
+            <div class="area-metric-row"><span>RR QTY</span><span>${r.sumRrQty.toFixed(1)}</span></div>
+            <div class="area-metric-row"><span>%ACH QTY</span><span style="color:${suggestionAchColor(r.saleAchQtyPct)}">${r.saleAchQtyPct.toFixed(1)}%</span></div>
+            <div class="area-metric-row"><span>%MOM QTY</span><span>${r.saleMomQtyPct===null||r.saleMomQtyPct===undefined?'N/A':(r.saleMomQtyPct>=0?'+':'')+r.saleMomQtyPct.toFixed(1)+'%'}</span></div>
+          </div>
+          <div class="area-metric-group">
+            <h5>Register &amp; Connect</h5>
+            <div class="area-metric-row"><span>Register</span><span>${r.registerCount.toLocaleString()}</span></div>
+            <div class="area-metric-row"><span>Connect</span><span>${r.connectCount.toLocaleString()}</span></div>
+            <div class="area-metric-row"><span>Pending</span><span>${r.pendingCount.toLocaleString()} (${r.pendingRate.toFixed(1)}%)</span></div>
+            <div class="area-metric-row"><span>Cancel</span><span>${r.cancelCount.toLocaleString()} (${r.cancelRate.toFixed(1)}%)</span></div>
+            <div class="area-metric-row"><span>MoM Register</span><span>${r.momReg===null?'N/A':(r.momReg>=0?'+':'')+r.momReg.toFixed(1)+'%'}</span></div>
+            <div class="area-metric-row"><span>MoM Connect</span><span>${r.momCon===null?'N/A':(r.momCon>=0?'+':'')+r.momCon.toFixed(1)+'%'}</span></div>
+          </div>
+        </div>
+        <div class="area-reco-block">
+          <h5>ข้อเสนอแนะ — Staff &amp; Productivity</h5>
+          <ul class="area-reco-list">${rec.staffBullets.map(b=>`<li>${b}</li>`).join('')}</ul>
+        </div>
+        <div class="area-reco-block">
+          <h5>ข้อเสนอแนะ — Sale Performance</h5>
+          <ul class="area-reco-list">${rec.saleBullets.map(b=>`<li>${b}</li>`).join('')}</ul>
+        </div>
+        <div class="area-reco-block">
+          <h5>ข้อเสนอแนะ — Register &amp; Connect</h5>
+          <ul class="area-reco-list">${rec.tolBullets.map(b=>`<li>${b}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </details>`;
+  }).join('');
+}
+
+function suggestionCsvEscape(v){ return csvEscape(v); }
+
+function exportSuggestionCsv(data){
+  const st = suggestionRankState;
+  const rows = data.rows.slice().sort((a,b)=>{
+    let av=a[st.sortKey], bv=b[st.sortKey];
+    if (av===null || av===undefined) av = -Infinity;
+    if (bv===null || bv===undefined) bv = -Infinity;
+    if (typeof av==='string'){ av=av.toLowerCase(); bv=bv.toLowerCase(); }
+    if (av<bv) return st.sortDir==='asc'?-1:1;
+    if (av>bv) return st.sortDir==='asc'?1:-1;
+    return 0;
+  });
+  const header = ['AREA','REGION','HEALTH SCORE','TIER','HEADCOUNT','%ACH RR (STAFF)','%ACH QTY (SALE)','%MOM QTY','CANCEL RATE%','PENDING RATE%','REGISTER','CONNECT'];
+  const lines = [header.map(suggestionCsvEscape).join(',')];
+  rows.forEach(r=>{
+    lines.push([
+      r.area, r.region, r.healthScore.toFixed(1), SUGGESTION_TIER_META[r.tier].label, r.headcount,
+      r.staffAchPct.toFixed(1), r.saleAchQtyPct.toFixed(1),
+      r.saleMomQtyPct===null||r.saleMomQtyPct===undefined?'':r.saleMomQtyPct.toFixed(1),
+      r.cancelRate.toFixed(1), r.pendingRate.toFixed(1), r.registerCount, r.connectCount,
+    ].map(suggestionCsvEscape).join(','));
+  });
+  const blob = new Blob(['﻿'+lines.join('\r\n')], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = 'suggestion_by_area.csv';
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+let suggestionDataCache = null;
+
+function renderSuggestionAll(){
+  suggestionDataCache = computeSuggestionAreaStats();
+  renderSuggestionKPIs(suggestionDataCache);
+  renderSuggestionPriorityCallouts(suggestionDataCache);
+  renderSuggestionRankTable(suggestionDataCache);
+  renderSuggestionAreaCards(suggestionDataCache);
+}
+
+document.querySelectorAll('#suggestionRankTable thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.key;
+    if (!key) return;
+    if (suggestionRankState.sortKey===key){
+      suggestionRankState.sortDir = suggestionRankState.sortDir==='asc' ? 'desc' : 'asc';
+    } else {
+      suggestionRankState.sortKey = key;
+      suggestionRankState.sortDir = (key==='area' || key==='region') ? 'asc' : 'desc';
+    }
+    renderSuggestionRankTable(suggestionDataCache);
+  });
+});
+document.getElementById('suggestionExportCsvBtn').addEventListener('click', ()=> exportSuggestionCsv(suggestionDataCache));
+
 // ---------- Tab navigation ----------
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -4787,9 +5331,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.getElementById('page-productivity').style.display = tab==='productivity' ? '' : 'none';
     document.getElementById('page-sale').style.display = tab==='sale' ? '' : 'none';
     document.getElementById('page-tol').style.display = tab==='tol' ? '' : 'none';
+    document.getElementById('page-suggestion').style.display = tab==='suggestion' ? '' : 'none';
     // The Sale Performance and Register & Connect tabs each use their own filter
-    // set (different schema) rather than the 5 staff-level filters.
-    document.getElementById('filterBar').style.display = (tab==='sale' || tab==='tol') ? 'none' : '';
+    // set (different schema) rather than the 5 staff-level filters; the
+    // Suggestion tab is a whole-network synthesis and has no filter bar at all.
+    document.getElementById('filterBar').style.display = (tab==='sale' || tab==='tol' || tab==='suggestion') ? 'none' : '';
     document.getElementById('spFilterBar').style.display = tab==='sale' ? '' : 'none';
     document.getElementById('tolFilterBar').style.display = tab==='tol' ? '' : 'none';
     if (tab==='productivity'){
@@ -4800,6 +5346,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       renderSaleAll();
     } else if (tab==='tol'){
       renderTolCharts(getTolFiltered());
+    } else if (tab==='suggestion'){
+      // No width-dependent SVG charts on this tab (rank-list/CSS-bar based) —
+      // already rendered once at init, so nothing to redraw here.
     } else {
       renderChart(getFiltered());
     }
@@ -4823,6 +5372,7 @@ buildSaleFilterWidgets();
 renderSaleAll();
 buildTolFilterWidgets();
 renderTolAll();
+renderSuggestionAll();
 window.addEventListener('resize', ()=>{
   renderChart(getFiltered());
   renderProductivity(getFiltered());
