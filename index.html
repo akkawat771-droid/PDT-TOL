@@ -332,6 +332,12 @@
     padding: 18px 20px 8px;
   }
   .chart-svg-wrap{ width:100%; overflow-x:auto; }
+  .chart-note{
+    position:absolute; right:20px; top:55px;
+    font-size:12px; font-weight:500; white-space:nowrap;
+    color: var(--text-secondary);
+    pointer-events:none; user-select:none; z-index:2;
+  }
   .bar-label-count{ font-size: 13px; font-weight:700; fill: var(--text-primary); }
   .bar-label-pct{ font-size: 10.5px; fill: var(--text-muted); }
   .prod-bar-value{ font-size: 10.5px; font-weight:700; fill: var(--text-primary); }
@@ -1487,11 +1493,13 @@
         <h4 class="chart-subtitle">TOL-REGISTER รายวัน (ต.ค.)</h4>
         <div class="chart-svg-wrap"><svg id="tolC1Chart" width="100%" height="260"></svg></div>
         <div class="bar-tooltip" id="tolC1Tooltip"></div>
+        <div class="chart-note">Dashboard internal Retail Operation</div>
       </div>
       <div class="chart-card">
         <h4 class="chart-subtitle">TOL-CONNECT รายวัน (ต.ค.)</h4>
         <div class="chart-svg-wrap"><svg id="tolC2Chart" width="100%" height="260"></svg></div>
         <div class="bar-tooltip" id="tolC2Tooltip"></div>
+        <div class="chart-note">Dashboard internal Retail Operation</div>
       </div>
     </div>
   </div>
